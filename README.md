@@ -98,7 +98,7 @@ Edit `backend/.env`:
 ```
 OPENROUTER_API_KEY=your_key     # openrouter.ai — $1 free credit on signup
 OPENWEATHER_API_KEY=your_key    # openweathermap.org — 1000 free calls/day
-NREL_API_KEY=your_KEY           # developer.nrel.gov — DEMO_KEY works for dev
+NREL_API_KEY=your_KEY           # developer.nrel.gov — works for dev
 EIA_API_KEY=your_key            # eia.gov — free, used for live national gas avg
 ```
 
