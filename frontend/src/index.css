@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background: #030712;
+    color: #f8fafc;
+    font-family: system-ui, -apple-system, 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  * { box-sizing: border-box; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+}
+
+@layer utilities {
+  /* Dot grid background */
+  .bg-dots {
+    background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* Line grid background */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  /* Glass panel */
+  .panel {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+  }
+  .panel-hover {
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .panel-hover:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  /* Score bar track */
+  .score-track {
+    background: rgba(255,255,255,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+    height: 4px;
+  }
+}
+
+/* ── Leaflet dark overrides ── */
+.leaflet-container {
+  background: #060d1f !important;
+  font-family: inherit !important;
+}
+.leaflet-popup-content-wrapper {
+  background: #0d1829 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+  border-radius: 10px !important;
+  color: white !important;
+}
+.leaflet-popup-tip { background: #0d1829 !important; }
+.leaflet-popup-content { margin: 0 !important; padding: 0 !important; }
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: #0d1829 !important;
+  color: #94a3b8 !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+.leaflet-control-attribution {
+  background: rgba(3,7,18,0.7) !important;
+  color: rgba(255,255,255,0.2) !important;
+  font-size: 9px !important;
+}
+.leaflet-control-attribution a { color: rgba(255,255,255,0.3) !important; }
+
+/* ── Animations ── */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2); opacity: 0; }
+}
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scan {
+  0%   { transform: translateY(0); opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+.animate-fade-up   { animation: fade-up 0.35s ease-out both; }
+.animate-slide-in  { animation: slide-in-left 0.3s ease-out both; }
+.animate-glow      { animation: glow-breathe 2s ease-in-out infinite; }
