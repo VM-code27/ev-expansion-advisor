@@ -12,6 +12,10 @@ frontend/dist/
 frontend/.env
 frontend/.env.local
 
+# Large data files — too big for GitHub (135 MB)
+# Run scripts/aggregate_ev.py once locally to regenerate data/ny_ev_summary.json
+data/ny_ev_registrations.csv
+
 # OS
 .DS_Store
 Thumbs.db

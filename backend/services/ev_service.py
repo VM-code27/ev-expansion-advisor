@@ -1,6 +1,5 @@
 import httpx
 import os
-import csv
 from pathlib import Path
 from models.schemas import EVData
 
@@ -33,24 +32,20 @@ NY_ZIP_CITY: dict[str, list[str]] = {
 
 
 def _count_registrations(city: str) -> int | None:
-    """Count EV registrations for a city from ny_ev_registrations.csv."""
-    path = Path(__file__).parent.parent.parent / "data" / "ny_ev_registrations.csv"
+    """Return pre-aggregated EV registration count for a city from ny_ev_summary.json."""
+    import json
+    path = Path(__file__).parent.parent.parent / "data" / "ny_ev_summary.json"
     if not path.exists():
         return None
-
-    city_lower = city.lower().strip()
-    prefixes = NY_ZIP_CITY.get(city_lower, [])
-    if not prefixes:
-        return None
-
-    total = 0
-    with open(path, newline="", encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            z = row.get("ZIP Code", "").strip()
-            if any(z.startswith(p) for p in prefixes):
-                total += 1
-
-    return total if total > 0 else None
+    try:
+        summary: dict[str, int] = json.loads(path.read_text(encoding="utf-8"))
+        # Try exact city name match (title-cased) first, then lowercase scan
+        for key, count in summary.items():
+            if key.lower() == city.lower().strip():
+                return count if count > 0 else None
+    except Exception:
+        pass
+    return None
 
 
 async def _nrel_station_count(city: str) -> int:
