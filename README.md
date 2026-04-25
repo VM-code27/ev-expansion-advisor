@@ -1,50 +1,77 @@
 # NY EV Expansion Advisor
 
-An AI-powered tool that tells EV charging companies whether to **Expand, Hold, or Avoid** any of 15 New York State cities — using 100% real local data and plain-English explanations.
+> **Live app:** [ev-expansion-advisor.vercel.app](ev-expansion-advisor.vercel.app) &nbsp;|&nbsp; **API:** [https://ev-expansion-advisor-api.onrender.com](https://ev-expansion-advisor-api.onrender.com/api/health)
+
+An AI-powered command-center dashboard that tells EV charging companies whether to **Expand, Hold, or Avoid** any of 15 New York State cities — using 100% real local data, live APIs, and plain-English analysis powered by Claude AI.
 
 ---
 
-## What It Does
+## Dashboard
 
-1. You pick a NY city (New York City, Buffalo, Albany, etc.)
-2. The app pulls **real weekly gas prices** from your NY State CSV, **real EV registrations** from the NY DMV dataset, **live weather**, and **live charging station counts**
-3. Claude AI analyzes all signals and returns a clear **Expand / Hold / Avoid** verdict
-4. The result shows up as a plain-English dashboard with a **NY State map**, confidence score, risk breakdown, and a phased action plan with real budget estimates
-
----
-
-## Supported Cities (15 total)
-
-| City | Region | Has Local Gas Data | Has ZIP Registration Data |
-|------|--------|-------------------|--------------------------|
-| New York City | Metro | ✅ | ✅ |
-| Buffalo | Western NY | ✅ | ✅ |
-| Rochester | Western NY | ✅ | ✅ |
-| Syracuse | Central NY | ✅ | ✅ |
-| Albany | Capital Region | ✅ | ✅ |
-| Utica | Central NY | ✅ | ✅ |
-| Binghamton | Southern Tier | ✅ | ✅ |
-| White Plains | Hudson Valley | ✅ | ✅ |
-| Nassau | Long Island | ✅ | ✅ |
-| Ithaca | Finger Lakes | ✅ | ✅ |
-| Elmira | Southern Tier | ✅ | ✅ |
-| Watertown | North Country | ✅ | ✅ |
-| Glens Falls | Capital Region | ✅ | ✅ |
-| Kingston | Hudson Valley | ✅ | ✅ |
-| Batavia | Western NY | ✅ | ✅ |
+- **Landing page** — search bar + EV charger illustration + live data source cards
+- **Command-center layout** — three-panel dashboard after analysis:
+  - Left sidebar: market signals (gas pressure, EV momentum, climate fit) with animated score bars
+  - Center: interactive NY State map at full height, risk strip below
+  - Right sidebar: key numbers, phased action plan timeline
+- **Verdict banner** — full-width Expand / Hold / Avoid decision with confidence bars and urgency level
 
 ---
 
-## Data Sources (all real, no estimates)
+## How It Works
 
-| Signal | Source |
-|--------|--------|
-| Gas prices (city-level) | `data/ny_gasoline.csv` — NY State DOT weekly survey |
-| National avg gas price | EIA live API (for comparison delta) |
-| EV registrations (ZIP-level) | `data/ny_ev_registrations.csv` — NY DMV data |
-| Charging station count | NREL Alternative Fuel Stations API (live) |
-| Weather | OpenWeatherMap API (live) |
-| Strategy decision | Claude via OpenRouter AI |
+1. Pick a NY city from the search bar or map
+2. The backend fetches **4 live data sources in parallel** — gas prices, EV registrations, charging station count, weather
+3. Claude AI analyzes all signals and returns a structured JSON verdict
+4. The dashboard renders immediately with decision, confidence score, signals, action plan, and risks
+
+---
+
+## Decision Logic
+
+| Verdict | Market Score | Meaning |
+|---------|-------------|---------|
+| **EXPAND** | >= 72 | Gas above national avg, EV demand growing, market not saturated — invest now |
+| **HOLD** | 50–71 | Mixed signals or timing concerns — revisit in 6–12 months |
+| **AVOID** | < 50 | Market too small, oversaturated, or weak EV demand |
+
+The AI injects today's date into every prompt so all timelines (Q3 2026, Q1 2027…) are always future-dated.
+
+---
+
+## Supported Cities
+
+| City | Region | EV Registrations |
+|------|--------|-----------------|
+| New York City | Metro | 247,660 |
+| Nassau | Long Island | 1,027,015 |
+| Rochester | Western NY | 200,479 |
+| Buffalo | Western NY | 151,248 |
+| Albany | Capital Region | 189,664 |
+| Syracuse | Central NY | 98,682 |
+| Ithaca | Finger Lakes | 66,444 |
+| Glens Falls | Capital Region | 39,841 |
+| Binghamton | Southern Tier | 38,500 |
+| Utica | Central NY | 35,888 |
+| Kingston | Hudson Valley | 34,924 |
+| White Plains | Hudson Valley | 258,870 |
+| Watertown | North Country | 17,760 |
+| Elmira | Southern Tier | 3,284 |
+| Batavia | Western NY | 4,121 |
+
+---
+
+## Data Sources
+
+| Signal | Source | Type |
+|--------|--------|------|
+| Gas prices (city-level) | `data/ny_gasoline.csv` — NY State DOT weekly survey | Local CSV |
+| National avg gas price | EIA API | Live |
+| EV registrations | `data/ny_ev_summary.json` — pre-aggregated from NY DMV | Local JSON |
+| Charging station count | NREL Alternative Fuel Stations API | Live |
+| Weather | OpenWeatherMap API | Live |
+| Strategy verdict | Claude 3 Haiku via OpenRouter | Live AI |
+
+> The 135 MB raw `ny_ev_registrations.csv` is excluded from git. Run `python scripts/aggregate_ev.py` once locally to regenerate `data/ny_ev_summary.json`.
 
 ---
 
@@ -53,10 +80,11 @@ An AI-powered tool that tells EV charging companies whether to **Expand, Hold, o
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 18 + Vite + TypeScript + Tailwind CSS + Framer Motion |
-| Map | React Leaflet + CartoDB dark tiles (free, no API key) |
-| Charts | Recharts |
-| Backend | Python 3.11 + FastAPI + httpx |
-| AI | OpenRouter → `anthropic/claude-3-haiku` |
+| Map | React Leaflet + CartoDB dark tiles |
+| Backend | Python 3.11 + FastAPI + httpx (async) |
+| AI | Claude 3 Haiku via OpenRouter |
+| Frontend hosting | Vercel (free) |
+| Backend hosting | Render (free) |
 
 ---
 
@@ -65,84 +93,99 @@ An AI-powered tool that tells EV charging companies whether to **Expand, Hold, o
 ```
 ev/
 ├── backend/
-│   ├── main.py
-│   ├── .env                        ← API keys
+│   ├── main.py                     <- FastAPI app + CORS + UTF-8 fix
+│   ├── runtime.txt                 <- Python 3.11 for Render
+│   ├── .python-version             <- Python 3.11 for Render
+│   ├── requirements.txt
+│   ├── .env                        <- API keys (not in git)
+│   ├── .env.example                <- Key names reference
 │   ├── models/schemas.py
-│   ├── routers/analyze.py          ← POST /api/analyze (NY cities only)
+│   ├── routers/analyze.py          <- POST /api/analyze
 │   └── services/
-│       ├── weather_service.py      ← OpenWeatherMap
-│       ├── fuel_service.py         ← NY CSV + EIA national avg
-│       ├── ev_service.py           ← NY DMV CSV + NREL AFDC
-│       └── ai_service.py           ← OpenRouter / Claude (with current date)
-├── frontend/src/
-│   ├── App.tsx                     ← Main layout
-│   └── components/
-│       ├── NYMap.tsx               ← Interactive NY state map
-│       ├── CitySearch.tsx          ← NY city autocomplete
-│       ├── DecisionCard.tsx        ← Expand/Hold/Avoid verdict
-│       ├── MetricsGrid.tsx         ← 3 signal cards (layman friendly)
-│       ├── ActionPlan.tsx          ← Phased game plan
-│       └── RiskPanel.tsx           ← Plain English risk breakdown
-└── data/
-    ├── ny_gasoline.csv             ← Weekly gas prices by NY city
-    └── ny_ev_registrations.csv    ← EV registrations by ZIP code
+│       ├── weather_service.py      <- OpenWeatherMap
+│       ├── fuel_service.py         <- NY CSV + EIA national avg
+│       ├── ev_service.py           <- ny_ev_summary.json + NREL AFDC
+│       └── ai_service.py           <- Claude via OpenRouter
+├── frontend/
+│   ├── src/
+│   │   ├── App.tsx                 <- Navbar + Landing + Dashboard layout
+│   │   ├── components/
+│   │   │   ├── NYMap.tsx           <- Interactive Leaflet map
+│   │   │   ├── CitySearch.tsx      <- Autocomplete search
+│   │   │   ├── MetricsGrid.tsx     <- Signal cards with score bars
+│   │   │   ├── ActionPlan.tsx      <- Phase timeline
+│   │   │   ├── RiskPanel.tsx       <- Risk assessment (normal + compact)
+│   │   │   └── LoadingState.tsx    <- Animated loading screen
+│   │   └── api/client.ts           <- Fetch wrapper (dev proxy + prod URL)
+│   └── vite.config.ts
+├── data/
+│   ├── ny_gasoline.csv             <- Weekly gas prices by city
+│   └── ny_ev_summary.json          <- Pre-aggregated EV counts by city
+├── scripts/
+│   └── aggregate_ev.py             <- One-time script to rebuild summary from raw CSV
+└── render.yaml                     <- Render auto-deploy config
 ```
 
 ---
 
-## Setup
+## Local Development
 
-### 1. API Keys
+### 1. Clone and set up API keys
 
-Edit `backend/.env`:
+```bash
+git clone https://github.com/VM-code27/ev-expansion-advisor.git
+cd ev-expansion-advisor
+cp backend/.env.example backend/.env
+# Edit backend/.env with your real keys
 ```
-OPENROUTER_API_KEY=your_key     # openrouter.ai — $1 free credit on signup
-OPENWEATHER_API_KEY=your_key    # openweathermap.org — 1000 free calls/day
-NREL_API_KEY=your_KEY           # developer.nrel.gov — works for dev
-EIA_API_KEY=your_key            # eia.gov — free, used for live national gas avg
-```
 
-### 2. Run Backend
+Required keys:
+
+| Key | Where to get it | Cost |
+|-----|----------------|------|
+| `OPENROUTER_API_KEY` | openrouter.ai | Free $1 credit |
+| `OPENWEATHER_API_KEY` | openweathermap.org | Free 1000 calls/day |
+| `NREL_API_KEY` | developer.nrel.gov | Free |
+| `EIA_API_KEY` | eia.gov | Free |
+
+### 2. Run backend
+
 ```bash
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-### 3. Run Frontend
+### 3. Run frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
 Open `http://localhost:5173`
 
 ---
 
-## How the Decision Works
+## Deployment
 
-| Verdict | Market Score | What it means |
-|---------|-------------|---------------|
-| **EXPAND** | ≥ 72 | Gas is expensive, EV demand is growing, market isn't saturated — invest now |
-| **HOLD** | 50–71 | Promising but mixed signals — wait 6–12 months |
-| **AVOID** | < 50 | Market too small, oversaturated, or demand is too low |
+### Backend → Render (free)
 
-The AI uses today's actual date so all timeline recommendations (Q3 2026, Q1 2027, etc.) are always in the future.
+Render reads `render.yaml` automatically.
 
----
+1. Push repo to GitHub
+2. Render → **New → Blueprint** → connect repo
+3. Add the 4 API keys in the Render dashboard under Environment
+4. Deploy — takes ~3 min
 
-## Deployment (Free)
+Health check: `https://ev-expansion-advisor-api.onrender.com/api/health`
 
-### Backend → Railway
-1. Push to GitHub
-2. Railway → New Project → Deploy from repo → root: `backend`
-3. Add env vars in Railway dashboard
-4. Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+### Frontend → Vercel (free)
 
-### Frontend → Vercel
-1. Vercel → New Project → root: `frontend`
-2. Add env var: `VITE_API_URL=https://your-app.railway.app`
-3. In `src/api/client.ts` change `BASE` to:
-   ```ts
-   const BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
-   ```
+1. Vercel → **New Project** → import repo
+2. Set Root Directory: `frontend`
+3. Add environment variable: `VITE_API_URL=https://ev-expansion-advisor-api.onrender.com`
+4. Deploy
+
+> **Note:** Render's free tier sleeps after 15 min of inactivity. The first request after sleep takes ~30 seconds. All subsequent requests are instant.
