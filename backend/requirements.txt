@@ -1,7 +1,7 @@
-fastapi
-uvicorn
+fastapi==0.104.1
+uvicorn==0.24.0
 requests
 python-dotenv
-pydantic
+pydantic==2.5.3
 pandas==2.2.2
 numpy==1.26.4
