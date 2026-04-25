@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: ev-expansion-advisor-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: NREL_API_KEY
+        sync: false
+      - key: EIA_API_KEY
+        sync: false
