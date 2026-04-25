@@ -1,6 +1,6 @@
 # NY EV Expansion Advisor
 
-> **Live app:** [ev-expansion-advisor.vercel.app](ev-expansion-advisor.vercel.app) &nbsp;|&nbsp; **API:** [https://ev-expansion-advisor-api.onrender.com](https://ev-expansion-advisor-api.onrender.com/api/health)
+> **Live app:** [https://ev-expansion-advisor.vercel.app/](https://ev-expansion-advisor.vercel.app/) &nbsp;|&nbsp; **API:** [https://ev-expansion-advisor-api.onrender.com](https://ev-expansion-advisor-api.onrender.com/api/health)
 
 An AI-powered command-center dashboard that tells EV charging companies whether to **Expand, Hold, or Avoid** any of 15 New York State cities — using 100% real local data, live APIs, and plain-English analysis powered by Claude AI.
 
